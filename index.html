@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FDP Assignments Portfolio</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>FDP Assignments Portfolio</h1>
+        <nav>
+            <a href="index.html" class="active">Home</a>
+            <a href="about.html">About</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="search-box">
+            <input type="text" id="search" placeholder="Search assignments...">
+        </div>
+
+        <div id="assignment-list" class="card-container">
+            <div class="spinner"></div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025  Krishna Sameera | FDP Assignments Portfolio</p>
+    </footer>
+
+    <!-- Modal -->
+    <div id="pdfModal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn">&times;</button>
+            <iframe id="pdfViewer"></iframe>
+        </div>
+    </div>
+
+    <script>
+        const container = document.getElementById('assignment-list');
+        const searchInput = document.getElementById('search');
+        const modal = document.getElementById('pdfModal');
+        const pdfViewer = document.getElementById('pdfViewer');
+        const closeBtn = document.querySelector('.close-btn');
+
+        fetch('pdfs.json')
+            .then(response => response.json())
+            .then(files => {
+                renderAssignments(files);
+
+                // Search Filter
+                searchInput.addEventListener('input', () => {
+                    const query = searchInput.value.toLowerCase();
+                    const filtered = files.filter(file => file.toLowerCase().includes(query));
+                    renderAssignments(filtered);
+                });
+            })
+            .catch(err => {
+                container.innerHTML = '<p>Error loading assignments.</p>';
+                console.error(err);
+            });
+
+        function renderAssignments(files) {
+            container.innerHTML = '';
+            files.forEach((file, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <h3>Assignment ${index + 1}</h3>
+                    <button>Preview PDF</button>
+                `;
+                card.querySelector('button').addEventListener('click', () => {
+                    openModal(`pdfs/${encodeURIComponent(file)}`);
+                });
+                container.appendChild(card);
+            });
+        }
+
+        function openModal(pdfPath) {
+            pdfViewer.src = pdfPath;
+            modal.style.display = 'flex';
+        }
+
+        closeBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+            pdfViewer.src = '';
+        });
+
+        window.addEventListener('click', e => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+                pdfViewer.src = '';
+            }
+        });
+    </script>
+</body>
+</html>
